@@ -58,7 +58,7 @@ interface PSPI // Payment Service Provider Interface
 	// ==================================================
 
 	// Redirect user to payment form - returns nothing,
-	// but $callbackUrl is NOT supposed to receive the PSP specific
+	// but $callbackUrl (optional) is NOT supposed to receive the PSP specific
 	// result. Rather, the PSPM is responsible for providing a callback
 	// URL to the PSP that receives the result, and "forwards" it in a
 	// standardized way to the URL set in $callbackUrl.
@@ -67,7 +67,10 @@ interface PSPI // Payment Service Provider Interface
 	// OrderId				: string
 	// Amount				: integer (in lowest unit, e.g. cents)
 	// Currency				: string (ISO 4217)
-	public function RedirectToPaymentForm($orderId, $amount, $currency, $callbackUrl);
+	// The $args variable is an optional associative array with key/value pairs as strings
+	// contaning optional details passed from the application. These arguments are
+	// carried to the PSP and back to the $callbackUrl where they are exposed through GET (query string).
+	public function RedirectToPaymentForm($orderId, $amount, $currency, $callbackUrl, $args);
 }
 
 class PaymentResult

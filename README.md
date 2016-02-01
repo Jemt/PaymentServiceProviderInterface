@@ -10,7 +10,7 @@ payment providers in applications and web shops.
 Currently the interface has been defined in PHP, but the standard *must* be
 language independent: https://github.com/Jemt/StandardizedPaymentProviderInterface/blob/master/PSPInterface.php
 
-** Code snippet **
+**Code snippet**
 
 The code below is an example of how the interface currently works (not committed just yet).
 
@@ -29,7 +29,7 @@ When the payment has been carried through, the user is taken back to *Thanks.htm
 
 Callback.php is invoked behind the scene (server-to-server communication) and can be used to update the order status when the payment is successful. Callback.php receives the Order ID, the Amount, and Currency. Data integrety is ensured using checksums and encryption keys - all automatically.
 
-** Callback.php example **
+**Callback.php example**
 
 ```
 require_once("PSPInterface.php");

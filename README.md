@@ -68,7 +68,7 @@ else
 **Configuration**
 
 The Payment Service Provider Interface requires some configuration to work.
-First som PSPI specific configuration is set in /Config.php
+First som PSPI specific configuration is set.
 
 *Config.php*
 ```
@@ -79,8 +79,8 @@ $config = array
 	// Defined by Payment Service Provider standard.
 	// Information MUST be supplied by application using PSP interface.
 
-  // Set e-mail address to enable debugging - debugging
-  // information is sent to this address - do NOT use in production!
+	// Set e-mail address to enable debugging - debugging
+	// information is sent to this address - do NOT use in production!
 	"DebugMail" => "debug@example.com",
 	
 	// Random value used to encrypt data to prevent man-in-the-middle attacks
@@ -96,7 +96,7 @@ $config = array
 ?>
 ```
 
-Finally the PSPM (Payment Service Provider Module) used must also be configured.
+Next the PSPM (Payment Service Provider Module) used must also be configured.
 What configuration is required depends completely on the provider. The example
 below shows what is required to use DIBS.
 

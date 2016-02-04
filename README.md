@@ -109,9 +109,9 @@ below shows what is required to use DIBS.
 
 $config = array
 (
-	"Merchant ID"         => "12345678",
-	"Encryption Key 1"		=> "jd84hgGY/_7fe3D@45v.2D#1", // OPTIONAL
-	"Encryption Key 2"		=> "-/dKKyJ62B.S?3:372JF/24G", // OPTIONAL
+	"Merchant ID"		=> "12345678",
+	"Encryption Key 1"	=> "jd84hgGY/_7fe3D@45v.2D#1", // OPTIONAL
+	"Encryption Key 2"	=> "-/dKKyJ62B.S?3:372JF/24G", // OPTIONAL
 	"API User: Username"	=> "ExternalUser",      // Required by Cancel API call
 	"API User: Password"	=> "8e.76@5J_Sl/nq:61"  // Required by Cancel API call
 );

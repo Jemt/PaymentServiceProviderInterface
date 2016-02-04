@@ -1,6 +1,6 @@
 <?php
 
-class QuickPay implements PSPI
+class PayPal implements PSPI
 {
 	public function RedirectToPaymentForm($orderId, $amount, $currency, $continueUrl = null, $callbackUrl = null)
 	{

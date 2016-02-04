@@ -1,9 +1,21 @@
 <?php
 
-class PSPM implements PSPI
+class Clearhaus implements PSPI
 {
-	// Missing implementation.
-	// Interface definition: https://github.com/Jemt/StandardizedPaymentProviderInterface/blob/master/PSPInterface.php
+	public function RedirectToPaymentForm($orderId, $amount, $currency, $continueUrl = null, $callbackUrl = null)
+	{
+		throw new Exception("Missing implementation");
+	}
+
+	public function CapturePayment($transactionId, $amount)
+	{
+		throw new Exception("Missing implementation");
+	}
+
+	public function CancelPayment($transactionId)
+	{
+		throw new Exception("Missing implementation");
+	}
 }
 
 ?>

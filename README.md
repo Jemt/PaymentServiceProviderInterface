@@ -12,6 +12,10 @@ providers in applications and web shops.
 PSPI solves this by exposing a very simple interface that allow developers
 to rapidly implement support for online payments in PHP applications.
 
+The PSPI solution is currently being incorporated into http://jsshop.org
+which will ship with the next version of Sitemagic CMS (http://sitemagic.org)
+around summer 2016. Follow the projects here: https://www.facebook.com/SitemagicCMS
+
 **Code snippet**
 
 The code below demonstrates how easy it is to receive payments.

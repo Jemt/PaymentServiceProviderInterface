@@ -44,7 +44,7 @@ class DIBS implements PSPI
 			<input type="hidden" name="amount" value="' . $amount . '">
 			<input type="hidden" name="currency" value="' . $currency . '">
 			<input type="hidden" name="md5key" value="' . $checksum . '">
-			<!--input type="hidden" name="test" value="true"-->
+			' . ((PSP::GetTestMode() === true) ? '<input type="hidden" name="test" value="true">' : '') . '
 			<input type="hidden" name="CUSTOM_Callback" value="' . (($callbackUrl !== null) ? $callbackUrl : "") . '">
 			<input type="hidden" name="CUSTOM_ContinueUrl" value="' . (($continueUrl !== null) ? $continueUrl : "") . '">
 		</form>
@@ -109,8 +109,7 @@ class DIBS implements PSPI
 		$response = PSP::Post($url, $data);
 		$result = (strpos($response, "status=ACCEPTED") !== false);
 
-		if (PSP::GetDebugMail() !== "")
-			mail(PSP::GetDebugMail(), "DIBS - API call", "Response from '" . $type . "Payment' API call: " . $response);
+		PSP::Log("DIBS - API call result: " . "\nType: " . $type . "\nSuccess: " . ($result === true ? "true" : "false") . "\nResponse: " . $response);
 
 		return $result;
 	}

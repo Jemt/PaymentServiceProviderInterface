@@ -17,7 +17,7 @@ interface PSPI
 	/// 	<param name="continueUrl" type="string"> URL to which user is redirected after completing payment - e.g. a receipt </param>
 	/// 	<param name="callbackUrl" type="string">
 	/// 		URL called asynchronously when payment is successfully carried through.
-	/// 		Use PSP::GetCallbackData() to obtain OrderId, Amount, and Currency.
+	/// 		Use PSP::GetCallbackData() to obtain OrderId, TransactionId, Amount, and Currency.
 	/// 	</param>
 	/// </function>
 	public function RedirectToPaymentForm($orderId, $amount, $currency, $continueUrl = null, $callbackUrl = null);
@@ -54,8 +54,8 @@ class PSPW implements PSPI
 		if (is_string($orderId) === false || is_integer($amount) === false || is_string($currency) === false || ($continueUrl !== null && is_string($continueUrl) === false) || ($callbackUrl !== null && is_string($callbackUrl) === false))
 			throw new Exception("Invalid argument(s) passed to RedirectToPaymentForm(string, integer, string[, string[, string]])");
 
-		if (strpos($continueUrl, "?") !== false || strpos($callbackUrl, "?") !== false)
-			throw new Exception("Invalid callback URL(s) passed - URL parameters are not allowed");
+		//if (strpos($continueUrl, "?") !== false || strpos($callbackUrl, "?") !== false)
+		//	throw new Exception("Invalid callback URL(s) passed - URL parameters are not allowed");
 
 		$this->pspm->RedirectToPaymentForm($orderId, $amount, $currency, $continueUrl, $callbackUrl);
 	}
@@ -164,8 +164,8 @@ class PSP
 		if (is_string($url) === false)
 			throw new Exception("Invalid argument passed to RedirectToContinueUrl(string)");
 
-		if (strpos($url, "?") !== false) // Prevent PSPM from appending arguments
-			throw new Exception("Invalid Continue URL passed - URL parameters are not allowed");
+		//if (strpos($url, "?") !== false) // Prevent PSPM from appending arguments
+			//throw new Exception("Invalid Continue URL passed - URL parameters are not allowed");
 
 		header("location: " . $url);
 		exit;
@@ -214,11 +214,11 @@ class PSP
 	/// </function>
 	public static function GetCallbackData()
 	{
-		$transactionId = $_POST["TransactionId"];
-		$orderId = $_POST["OrderId"];
-		$amount = (int)$_POST["Amount"];
-		$currency = $_POST["Currency"];
-		$checksum = $_POST["Checksum"];
+		$transactionId = (isset($_POST["TransactionId"]) ? $_POST["TransactionId"] : null);
+		$orderId = (isset($_POST["OrderId"]) ? $_POST["OrderId"] : null);
+		$amount = (isset($_POST["Amount"]) ? (int)$_POST["Amount"] : -1);
+		$currency = (isset($_POST["Currency"]) ? $_POST["Currency"] : null);
+		$checksum = (isset($_POST["Checksum"]) ? $_POST["Checksum"] : null);
 		$newChecksum = md5(self::getEncryptionKey() . $transactionId . $orderId . $amount . $currency);
 
 		if ($newChecksum !== $checksum)
@@ -244,19 +244,6 @@ class PSP
 		return self::$configuration;
 	}
 
-	/// <function container="PSP" name="GetProviderPath" access="public" static="true" returns="string">
-	/// 	<description> Returns path to folder containing PSPM </description>
-	/// 	<param name="provider" type="string"> Name of PSPM </param>
-	/// </function>
-	public static function GetProviderPath($provider)
-	{
-		if (is_string($provider) === false)
-			throw new Exception("Invalid argument passed to GetProviderPath(string)");
-
-		self::ensureBaseConfig();
-		return self::$baseConfig["BasePath"] . "/" . $provider;
-	}
-
 	/// <function container="PSP" name="GetProviderUrl" access="public" static="true" returns="string">
 	/// 	<description> Returns external URL to folder containing PSPM </description>
 	/// 	<param name="provider" type="string"> Name of PSPM </param>
@@ -268,18 +255,6 @@ class PSP
 
 		self::ensureBaseConfig();
 		return self::$baseConfig["BaseUrl"] . "/" . $provider;
-	}
-
-	/// <function container="PSP" name="GetDebugMail" access="public" static="true" returns="string">
-	/// 	<description>
-	/// 		Returns an e-mail address that can be used to send debugging information.
-	/// 		An empty string indicates that debugging is not enabled.
-	/// 	</description>
-	/// </function>
-	public static function GetDebugMail()
-	{
-		self::ensureBaseConfig();
-		return self::$baseConfig["DebugMail"];
 	}
 
 	// Conversion
@@ -323,6 +298,105 @@ class PSP
 		return self::$numCurrencies[$numericCurrencyValue]; // Numeric values are stored as strings to preserve any leading zeros (e.g. ALL = 008)
 	}
 
+	// Logging
+
+	/// <function container="PSP" name="IsLoggingEnabled" access="public" static="true" returns="boolean">
+	/// 	<description> Returns a value indicating whether logging is enabled or not </description>
+	/// </function>
+	public static function IsLoggingEnabled()
+	{
+		self::ensureBaseConfig();
+		return (self::$baseConfig["LogFile"] !== "" && self::$baseConfig["LogMode"] !== "Disabled");
+	}
+
+	/// <function container="PSP" name="GetLogMode" access="public" static="true" returns="string">
+	/// 	<description> Returns a value indicating the current logging mode (Disabled, Simple, or Full) </description>
+	/// </function>
+	public static function GetLogMode()
+	{
+		self::ensureBaseConfig();
+		return self::$baseConfig["LogMode"];
+	}
+
+	/// <function container="PSP" name="Log" access="public" static="true">
+	/// 	<description> Log message to log file - nothing will be logged if logging has been disabled </description>
+	/// 	<param name="msg" type="string"> Message to log </param>
+	/// </function>
+	public static function Log($msg)
+	{
+		self::ensureBaseConfig();
+
+		if (self::IsLoggingEnabled() === true)
+		{
+			$path = self::$baseConfig["LogFile"];
+
+			// Make sure log file can be written
+
+			$match = array(); // 0 = full match, 1 = first capture group (folder path), 2 = second capture group (filename)
+			preg_match("/(.*)\\/(.*)/", $path, $match);
+
+			$folderPath = "";
+			$filename = "";
+
+			if (count($match) === 0) // E.g. $path = PSPI_Log.txt
+			{
+				$folderPath = dirname(__FILE__);
+				$filename = $path;
+			}
+			else // E.g. $path = path/to/logs/PSPI_Log.txt or $path = path/to/logs/
+			{
+				$folderPath = $match[1];
+				$filename = ($match[2] !== "" ? $match[2] : "PSPI.log");
+			}
+
+			if ($folderPath[0] !== "/") // Path relative to PSPI package (considered absolute if starting with a slash)
+				$folderPath = dirname(__FILE__) . "/" . $folderPath;
+
+			$path = $folderPath . "/" . $filename;
+
+			if (file_exists($path) === true && is_writable($path) === false)
+				throw new Exception("Log file '" . $path . "' is not writable");
+			else if (is_writable($folderPath) === false)
+				throw new Exception("Log file cannot be created - folder '" . $folderPath . "' is not writable");
+
+			// Create log entry
+
+			$log = "";
+			$log .= "\n====================================";
+			$log .= "\nTime: " . date("Y-m-d H:m:s");
+			$log .= "\n====================================";
+			$log .= "\n" . $msg;
+
+			if (self::$baseConfig["LogMode"] === "Full")
+			{
+				$log .= "\n";
+				$log .= "\$_GET:" . print_r($_GET, true);
+				$log .= "\$_POST:" . print_r($_POST, true);
+				//$log .= "\$_SERVER:" . print_r($_SERVER, true);
+			}
+			else
+			{
+				$log .= "\n";
+			}
+
+			// Save log entry
+
+			@file_put_contents($path, $log, FILE_APPEND);
+		}
+	}
+
+	/// <function container="PSP" name="GetTestMode" access="public" static="true" returns="boolean">
+	/// 	<description>
+	/// 		Returns a value indicating whether transactions should be carried
+	/// 		out in test mode, meaning no money should be charged when testing.
+	/// 	</description>
+	/// </function>
+	public static function GetTestMode()
+	{
+		self::ensureBaseConfig();
+		return self::$baseConfig["TestMode"];
+	}
+
 	// Private
 
 	private static function ensureBaseConfig()
@@ -330,6 +404,21 @@ class PSP
 		if (self::$baseConfig === null)
 		{
 			require_once(dirname(__FILE__) . "/Config.php");
+
+			if ($config["ConfigPath"] !== "") // Handle alternative configuration folder
+			{
+				$configPath = $config["ConfigPath"];
+				$configPath = (($configPath[0] !== "/") ? dirname(__FILE__) . "/" : "") . $configPath; // Turn into absolute path if relative path was specified
+				$configPath = (($configPath[strlen($configPath) - 1] === "/") ? substr($configPath, 0, -1) : $configPath); // Remove trailing slash if defined
+				$configFile = $configPath . "/Config.php";
+
+				if (file_exists($configFile) === false)
+					throw new Exception("PSPI configuration file '" . $configFile . "' not found");
+
+				require_once($configFile);
+				$config["ConfigPath"] = $configPath;
+			}
+
 			self::$baseConfig = $config;
 		}
 	}
@@ -341,7 +430,13 @@ class PSP
 
 		if (self::$configuration === null)
 		{
-			require_once(dirname(__FILE__) . "/" . $provider . "/Config.php");
+			self::ensureBaseConfig();
+
+			if (self::$baseConfig["ConfigPath"] !== "")
+				require_once(self::$baseConfig["ConfigPath"] . "/" . $provider . "/Config.php");
+			else
+				require_once(dirname(__FILE__) . "/" . $provider . "/Config.php");
+
 			self::$configuration = $config;
 		}
 	}
@@ -373,7 +468,7 @@ class PSP
 
 function PSPErrorHandler($errNo, $errMsg, $errFile, $errLine)
 {
-	mail(PSP::GetDebugMail(), "PSP - payment error occured", "Error ID: " . $errNo . "\nError message: " . $errMsg . "\nFile: " . $errFile . "\nLine: " . $errLine);
+	PSP::Log("PSP - unhandled error occurred:\nError ID: " . $errNo . "\nError message: " . $errMsg . "\nFile: " . $errFile . "\nLine: " . $errLine);
 	return false; // Return control to PHP's error handler
 }
 
@@ -384,19 +479,25 @@ function PSPExceptionHandler(Exception $ex)
 	$errFile = $ex->getFile();
 	$errLine = $ex->getLine();
 
-	mail(PSP::GetDebugMail(), "PSP - payment error occured", "Error ID: " . $errNo . "\nError message: " . $errMsg . "\nFile: " . $errFile . "\nLine: " . $errLine);
+	try
+	{
+		PSP::Log("PSP - unhandled exception occurred:\nError ID: " . $errNo . "\nError message: " . $errMsg . "\nFile: " . $errFile . "\nLine: " . $errLine . (PSP::GetLogMode() === "Full" ? "\nStackTrace: " . $ex->getTraceAsString() : ""));
+	}
+	catch (Exception $excp)
+	{
+	}
 
 	header("HTTP/1.1 500 Internal Server Error");
 	header("Content-Type: text/html; charset=ISO-8859-1");
 
-	echo "<b>An unhandled error occured</b><br><br>";
+	echo "<b>An unhandled exception occurred</b><br><br>";
 	echo $ex->getMessage();
 	echo "<br><br><b>Stack trace</b><br><pre>";
 	echo $ex->getTraceAsString();
 	echo "</pre>";
 }
 
-if (PSP::GetDebugMail() !== "")
+if (PSP::IsLoggingEnabled() === true)
 {
 	error_reporting(E_ALL | E_STRICT);
 	ini_set("display_errors", 1);

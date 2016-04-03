@@ -5,10 +5,16 @@ $config = array
 	// Defined by Payment Service Provider standard.
 	// Information MUST be supplied by application using PSP interface.
 
-	"DebugMail"			=> "debug@example.com",								// Set e-mail address to enable debugging - any errors are sent to this address (mail(..) must be enabled) - do NOT use in production!
-	"EncryptionKey"		=> "-mjhf6/43kBSD&24*f.GL;4917fd@DMBv_IQ512",		// Random value used to encrypt data to prevent man-in-the-middle attacks
-	"BasePath"			=> "PSP",											// Folder relative to application containing PSP package (e.g. libs/PSP)
-	"BaseUrl"			=> "http://example.com/libs/PSP"					// External URL to folder containing PSP package (e.g. http://example.com/libs/PSP)
+	"EncryptionKey"		=> "-3%8h7_8//snm.Gw3bDFU#@G6.723#pma53/YG821jv",	// String: Random value used to encrypt data to prevent man-in-the-middle attacks
+	"BaseUrl"			=> "http://example.com/libs/PSPI",					// String: External URL to folder containing PSPI package (e.g. http://example.com/libs/PSPI)
+	"LogFile"			=> "../../logs/PSPI.log",							// String: Path to log file (relative to application or absolute if starting with /) - leave empty to disable logging
+	"LogMode"			=> "Simple",										// String: Log mode - possible values are: Disabled, Simple, or Full (WARNING: Log may contain sensitive information!)
+	"TestMode"			=> true												// Boolean: Set True to switch to test mode - this usually puts Payment Service Provider Modules in test mode to make sure no money will be charged when testing
 );
+
+/*$config = array
+(
+	"ConfigPath"		=> "../../../data/PSPI"								// Path to alternative config folder (relative to application or absolute if starting with /)
+);*/
 
 ?>

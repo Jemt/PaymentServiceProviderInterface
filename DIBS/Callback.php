@@ -5,11 +5,7 @@
 
 require_once(dirname(__FILE__) . "/../PSPInterface.php"); // Callback is called directly by Payment Service Provider, so we need to include PSPInterface.php
 
-if (isset($_POST["fullreply"]) === false) // Handle Continue URL
-{
-	PSP::RedirectToContinueUrl($_POST["CUSTOM_ContinueUrl"]);
-}
-else // Handle Server-To-Server Callback
+if ($_SERVER["REMOTE_ADDR"] === "85.236.67.1") // Handle Server-To-Server Callback - IP found in documentation under "CallbackUrl": http://tech.dibspayment.com/D2/Hosted/Output_parameters/Return_pages
 {
 	$config = PSP::GetConfig("DIBS");
 
@@ -32,10 +28,13 @@ else // Handle Server-To-Server Callback
 	// Using PSP::InvokeCallback(..) which implements security measures
 	// to prevent man-in-the-middle attacks.
 
-	if (PSP::GetDebugMail() !== "")
-		mail(PSP::GetDebugMail(), "DIBS - raw callback data", "GET:\n" . print_r($_GET, true) . "\n\nPOST:\n" . print_r($_POST, true));
+	PSP::Log("DIBS - invoking callback:\nTransactionId: " . $_POST["transact"] . "\nOrderId: " . $_POST["orderid"] . "\nAmount: " . $_POST["amount"] . "\nCurrency: " . $_POST["currency"]);
 
 	PSP::InvokeCallback($_POST["CUSTOM_Callback"], $_POST["transact"] . ";" . $_POST["orderid"], $_POST["orderid"], (int)$_POST["amount"], $_POST["currency"]);
+}
+else if (isset($_POST["CUSTOM_ContinueUrl"]) === true) // Handle Continue URL
+{
+	PSP::RedirectToContinueUrl($_POST["CUSTOM_ContinueUrl"]);
 }
 
 ?>

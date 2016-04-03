@@ -9,8 +9,7 @@ $orderId = $data["OrderId"];				// String
 $amount = $data["Amount"];					// Integer
 $currency = $data["Currency"];				// String
 
-if (PSP::GetDebugMail() !== "")
-	mail(PSP::GetDebugMail(), "DIBS - custom callback invoked", "TransactionId: " . $transactionId . "\nOrderId: " . $orderId . "\nAmount: " . $amount . "\nCurrency: " . $currency);
+PSP::Log("DIBS - custom callback invoked:\nTransactionId: " . $transactionId . "\nOrderId: " . $orderId . "\nAmount: " . $amount . "\nCurrency: " . $currency);
 
 // Immediately capture or cancel payment
 

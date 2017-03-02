@@ -95,7 +95,12 @@ $config = array
 	
 	// Log Mode - possible values are: Disabled, Simple, or Full.
 	// WARNING: Log may contain sensitive information so use with caution!
-	"LogMode" => "Disabled"
+	"LogMode" => "Disabled",
+	
+	// Boolean indicating whether Payment Service Provider Modules (e.g. DIBS)
+	// should run in Test Mode or Production Mode. Modules running in test mode
+	// will usually allow test transactions without actually charging any money.
+	"TestMode" => true
 );
 
 ?>

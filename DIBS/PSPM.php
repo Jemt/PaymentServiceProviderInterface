@@ -5,7 +5,7 @@
 // this file is located, and implement the PSPI interface.
 // Do not include PSPInterface.php - PSPM is instantiated
 // from within the PSP system, so all necessary resources
-// will be loaded at run time.
+// will be loaded runtime.
 
 class DIBS implements PSPI
 {

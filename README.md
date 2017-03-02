@@ -80,21 +80,22 @@ First som PSPI specific configuration is set.
 
 $config = array
 (
-	// Defined by Payment Service Provider standard.
-	// Information MUST be supplied by application using PSP interface.
-
-	// Set e-mail address to enable debugging - debugging
-	// information is sent to this address - do NOT use in production!
-	"DebugMail" => "debug@example.com",
+	// Config array defined by Payment Service Provider Interface.
+	// Information MUST be supplied in order for PSPI to work properly.
 	
-	// Random value used to encrypt data to prevent man-in-the-middle attacks
+	// Random value used to encrypt data to prevent man-in-the-middle attacks.
 	"EncryptionKey" => "-mjhf6/43kBSD&24*f.GL;4917fd@DMBv_IQ512",
 	
-	// Path to folder containing PSP package
-	"BasePath" => "libs/PSP",
+	// URL to folder containing PSPI package.
+	"BaseUrl" => "http://example.com/libs/PSPI",
 	
-	// URL to folder containing PSP package
-	"BaseUrl" => "http://example.com/libs/PSP"
+	// Path to log file.
+	// WARNING: Log may contain sensitive information so use with caution!
+	"LogFile" => "../../../logs/PSPI.log",
+	
+	// Log Mode - possible values are: Disabled, Simple, or Full.
+	// WARNING: Log may contain sensitive information so use with caution!
+	"LogMode" => "Disabled"
 );
 
 ?>

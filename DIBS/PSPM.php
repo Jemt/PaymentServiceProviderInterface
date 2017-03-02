@@ -64,7 +64,7 @@ class DIBS implements PSPI
 
 	public function CancelPayment($transactionId)
 	{
-		return $this->apiCall("Cancel", $transactionId, $orderId);
+		return $this->apiCall("Cancel", $transactionId);
 	}
 
 	private function apiCall($type, $transactionId, $amount = -1)

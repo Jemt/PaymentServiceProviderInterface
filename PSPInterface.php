@@ -405,7 +405,7 @@ class PSP
 		{
 			require_once(dirname(__FILE__) . "/Config.php");
 
-			if ($config["ConfigPath"] !== "") // Handle alternative configuration folder
+			if (isset($config["ConfigPath"]) && $config["ConfigPath"] !== "") // Handle alternative configuration folder
 			{
 				$configPath = $config["ConfigPath"];
 				$configPath = (($configPath[0] !== "/") ? dirname(__FILE__) . "/" : "") . $configPath; // Turn into absolute path if relative path was specified
@@ -432,7 +432,7 @@ class PSP
 		{
 			self::ensureBaseConfig();
 
-			if (self::$baseConfig["ConfigPath"] !== "")
+			if (isset(self::$baseConfig["ConfigPath"]) && self::$baseConfig["ConfigPath"] !== "")
 				require_once(self::$baseConfig["ConfigPath"] . "/" . $provider . "/Config.php");
 			else
 				require_once(dirname(__FILE__) . "/" . $provider . "/Config.php");

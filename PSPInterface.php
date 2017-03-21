@@ -87,7 +87,7 @@ class PSPW implements PSPI
 class PSP
 {
 	private static $baseConfig = null;
-	private static $configuration = null;
+	private static $configurations = array();
 	private static $currencies = null;
 	private static $numCurrencies = null;
 
@@ -241,7 +241,7 @@ class PSP
 			throw new Exception("Invalid argument passed to GetConfig(string)");
 
 		self::ensureProviderConfig($provider);
-		return self::$configuration;
+		return self::$configurations[$provider];
 	}
 
 	/// <function container="PSP" name="GetProviderUrl" access="public" static="true" returns="string">
@@ -428,7 +428,7 @@ class PSP
 		if (is_string($provider) === false)
 			throw new Exception("Invalid argument passed to ensureProviderConfig(string)");
 
-		if (self::$configuration === null)
+		if (isset(self::$configurations[$provider]) === false)
 		{
 			self::ensureBaseConfig();
 
@@ -437,7 +437,7 @@ class PSP
 			else
 				require_once(dirname(__FILE__) . "/" . $provider . "/Config.php");
 
-			self::$configuration = $config;
+			self::$configurations[$provider] = $config;
 		}
 	}
 

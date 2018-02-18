@@ -5,13 +5,18 @@
 // this file is located, and implement the PSPI interface.
 // Do not include PSPInterface.php - PSPM is instantiated
 // from within the PSP system, so all necessary resources
-// will be loaded runtime.
+// will be loaded at run time.
 
 class DIBS implements PSPI
 {
+	protected function GetName()
+	{
+		return "DIBS";
+	}
+
 	public function RedirectToPaymentForm($orderId, $amount, $currency, $continueUrl = null, $callbackUrl = null)
 	{
-		$cfg = PSP::GetConfig("DIBS");
+		$cfg = PSP::GetConfig($this->GetName());
 
 		// Currency - make sure numeric value is used to work around checksum bug
 
@@ -38,8 +43,8 @@ class DIBS implements PSPI
 		echo '
 		<form id="DIBS" method="POST" action="https://payment.architrade.com/paymentweb/start.action">
 			<input type="hidden" name="merchant" value="' . $cfg["Merchant ID"] . '">
-			<input type="hidden" name="callbackurl" value="' . PSP::GetProviderUrl("DIBS") . "/Callback.php" . '">
-			<input type="hidden" name="accepturl" value="' . PSP::GetProviderUrl("DIBS") . "/Callback.php" . '">
+			<input type="hidden" name="callbackurl" value="' . PSP::GetProviderUrl($this->GetName()) . "/Callback.php" . '">
+			<input type="hidden" name="accepturl" value="' . PSP::GetProviderUrl($this->GetName()) . "/Callback.php" . '">
 			<input type="hidden" name="orderid" value="' . $orderId . '">
 			<input type="hidden" name="amount" value="' . $amount . '">
 			<input type="hidden" name="currency" value="' . $currency . '">
@@ -73,7 +78,7 @@ class DIBS implements PSPI
 		$transactionId = $transactionInfo[0];
 		$orderId = $transactionInfo[1];
 
-		$cfg = PSP::GetConfig("DIBS");
+		$cfg = PSP::GetConfig($this->GetName());
 
 		$checksum = "";
 		if (isset($cfg["Encryption Key 1"]) && $cfg["Encryption Key 1"] !== "" && isset($cfg["Encryption Key 2"]) && $cfg["Encryption Key 2"] !== "")
@@ -109,7 +114,7 @@ class DIBS implements PSPI
 		$response = PSP::Post($url, $data);
 		$result = (strpos($response, "status=ACCEPTED") !== false);
 
-		PSP::Log("DIBS - API call result: " . "\nType: " . $type . "\nSuccess: " . ($result === true ? "true" : "false") . "\nResponse: " . $response);
+		PSP::Log($this->GetName() . " - API call result: " . "\nType: " . $type . "\nSuccess: " . ($result === true ? "true" : "false") . "\nResponse: " . $response);
 
 		return $result;
 	}

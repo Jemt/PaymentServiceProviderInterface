@@ -120,35 +120,85 @@ class PSP
 	/// <function container="PSP" name="Post" access="public" static="true" returns="string">
 	/// 	<description> Post data to given URL </description>
 	/// 	<param name="url" type="string"> Target URL </param>
-	/// 	<param name="data" type="string[]"> Associative array contain data as key/value pairs </param>
+	/// 	<param name="data" type="string[]" default="null"> Associative array contain data as key/value pairs </param>
+	/// 	<param name="headers" type="string[]" default="null"> Optional associative array contain headers as key/value pairs </param>
 	/// </function>
-	public static function Post($url, $data)
+	public static function Post($url, $data = null, $headers = null)
 	{
 		if (is_string($url) === false)
-			throw new Exception("Invalid argument(s) passed to Post(string, string[])");
+			throw new Exception("Invalid argument(s) passed to Post(string, string[], string[]");
 
-		foreach ($data as $key => $value)
+		foreach ((($data !== null) ? $data : array()) as $key => $value)
 		{
 			if (is_string($key) === false || is_string($value) === false)
-				throw new Exception("Invalid argument(s) passed to Post(string, string[])");
+				throw new Exception("Invalid argument(s) passed to Post(string, string[], string[])");
 		}
+
+		foreach ((($headers !== null) ? $headers : array()) as $key => $value)
+		{
+			if (is_string($key) === false || is_string($value) === false)
+				throw new Exception("Invalid argument(s) passed to Post(string, string[], string[])");
+		}
+
+		// Prepare header(s)
+
+		$header = "";
+		$contentTypeSet = false;
+
+		if ($headers !== null)
+		{
+			foreach ($headers as $key => $value)
+			{
+				if (strtolower($key) === "content-type")
+					$contentTypeSet = true;
+
+				$header .= (($header !== "") ? "\r\n" : "") . $key . ": " . $value;
+			}
+		}
+
+		if ($contentTypeSet === false) // Avoid error: Content-type not specified assuming application/x-www-form-urlencoded
+		{
+			$header .= (($header !== "") ? "\r\n" : "") . "Content-Type: application/x-www-form-urlencoded";
+		}
+
+		// Create stream context
 
 		$sc = stream_context_create(
 			array(
 				"http" => array(
 					"method" => "POST",
-					"header" => "Content-Type: application/x-www-form-urlencoded",
-					"content" => http_build_query($data)
+					"header" => $header,
+					"content" => http_build_query((($data !== null) ? $data : array())),
+					"ignore_errors" => true // Prevent errors caused by HTTP status codes such as "201 Created" on older versions of PHP (found with PHP 5.2.17 on MAMP Pro) - this will make file_get_contents() return error message (e.g. '404 Not Found') rather than False, but strangely return the actual response for "201 Created" which previously caused an error
 				)
 			)
 		);
 
 		// Perform request
 
-		$response = file_get_contents($url, false, $sc);
+		$response = file_get_contents($url, false, $sc); // https:// requires openssl to be enabled (http://php.net/manual/en/wrappers.http.php)
 
 		if ($response === false)
-			throw new Exception("Unable to perform request to URL '" . $url . "'");
+			throw new Exception("Request to URL '" . $url . "' failed");
+
+		// Check response (compensate for ignore_errors=true in stream context above)
+
+		$statusCode = -1;
+		$matches = array();
+
+		foreach ($http_response_header as $responseHeader) // $http_response_header is "magically" created by PHP when file_get_contents(..) is invoked
+		{
+			if (preg_match('/HTTP\/.*? (.*) .*/i', $responseHeader, $matches, PREG_OFFSET_CAPTURE) === 1) // $matches[0][0] = full match, $matches[0][1] = full match position, $matches[1][0] = capture group (status code), $matches[1][1] = capture group position
+			{
+				$statusCode = (int)$matches[1][0];
+				break;
+			}
+		}
+
+		if ($statusCode < 200 || $statusCode > 299)
+		{
+			throw new Exception("Request to URL '" . $url . "' failed - HTTP Status Code: '" . (string)$statusCode . "'");
+		}
 
 		// Return response
 
@@ -361,9 +411,13 @@ class PSP
 
 			// Create log entry
 
+			// Prevent annoying warning:
+			// Strict Standards: date() [function.date]: It is not safe to rely on the system's timezone settings
+			date_default_timezone_set("UTC");
+
 			$log = "";
 			$log .= "\n====================================";
-			$log .= "\nTime: " . date("Y-m-d H:m:s");
+			$log .= "\nTime: " . date("Y-m-d H:i:s");
 			$log .= "\n====================================";
 			$log .= "\n" . $msg;
 
@@ -463,7 +517,7 @@ class PSP
 }
 
 // ======================================================================================
-// Error handling - only in effect if DebugMail has been configured
+// Error handling - only in effect if logging has been configured
 // ======================================================================================
 
 function PSPErrorHandler($errNo, $errMsg, $errFile, $errLine)
@@ -472,7 +526,7 @@ function PSPErrorHandler($errNo, $errMsg, $errFile, $errLine)
 	return false; // Return control to PHP's error handler
 }
 
-function PSPExceptionHandler(Exception $ex)
+function PSPExceptionHandler($ex) // The $ex argument may be of type Exception or Error on PHP 7 (both implements Throwable) while only of type Exception prior to PHP 7 (http://php.net/manual/en/function.set-exception-handler.php)
 {
 	$errNo = $ex->getCode();
 	$errMsg = $ex->getMessage();
@@ -488,7 +542,7 @@ function PSPExceptionHandler(Exception $ex)
 	}
 
 	header("HTTP/1.1 500 Internal Server Error");
-	header("Content-Type: text/html; charset=ISO-8859-1");
+	//header("Content-Type: text/html; charset=ISO-8859-1");
 
 	echo "<b>An unhandled exception occurred</b><br><br>";
 	echo $ex->getMessage();

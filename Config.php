@@ -1,6 +1,6 @@
 <?php
 
-$config = array
+/*$config = array
 (
 	// Defined by Payment Service Provider standard.
 	// Information MUST be supplied by application using PSP interface.
@@ -10,11 +10,11 @@ $config = array
 	"LogFile"			=> "../../logs/PSPI.log",							// String: Path to log file (relative to application or absolute if starting with /) - leave empty to disable logging
 	"LogMode"			=> "Simple",										// String: Log mode - possible values are: Disabled, Simple, or Full (WARNING: Log may contain sensitive information!)
 	"TestMode"			=> true												// Boolean: Set True to switch to test mode - this usually puts Payment Service Provider Modules in test mode to make sure no money will be charged when testing
-);
+);*/
 
-/*$config = array
+$config = array
 (
 	"ConfigPath"		=> "../../../data/PSPI"								// Path to alternative config folder (relative to application or absolute if starting with /)
-);*/
+);
 
 ?>

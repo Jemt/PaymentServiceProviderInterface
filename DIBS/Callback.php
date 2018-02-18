@@ -7,7 +7,8 @@ require_once(dirname(__FILE__) . "/../PSPInterface.php"); // Callback is called 
 
 if ($_SERVER["REMOTE_ADDR"] === "85.236.67.1") // Handle Server-To-Server Callback - IP found in documentation under "CallbackUrl": http://tech.dibspayment.com/D2/Hosted/Output_parameters/Return_pages
 {
-	$config = PSP::GetConfig("DIBS");
+	$name = basename(getcwd());
+	$config = PSP::GetConfig($name);
 
 	// Checksum (if keys are configured)
 
@@ -21,14 +22,14 @@ if ($_SERVER["REMOTE_ADDR"] === "85.236.67.1") // Handle Server-To-Server Callba
 		$checksum = md5($k2 . md5($k1 . "transact=" . $_POST["transact"] . "&amount=" . $_POST["amount"] . "&currency=" . $_POST["currency"]));
 
 		if ($checksum !== $_POST["authkey"])
-			throw new Exception("SecurityException: Integrity check failed - mismatching checksums");
+			throw new Exception("SecurityException: Integrity check failed - mismatching checksums (" . $name . ")");
 	}
 
 	// Invoke applicaton callback specified in RedirectToPaymentForm(..).
 	// Using PSP::InvokeCallback(..) which implements security measures
 	// to prevent man-in-the-middle attacks.
 
-	PSP::Log("DIBS - invoking callback:\nTransactionId: " . $_POST["transact"] . "\nOrderId: " . $_POST["orderid"] . "\nAmount: " . $_POST["amount"] . "\nCurrency: " . $_POST["currency"]);
+	PSP::Log($name . " - invoking callback:\nTransactionId: " . $_POST["transact"] . "\nOrderId: " . $_POST["orderid"] . "\nAmount: " . $_POST["amount"] . "\nCurrency: " . $_POST["currency"]);
 
 	PSP::InvokeCallback($_POST["CUSTOM_Callback"], $_POST["transact"] . ";" . $_POST["orderid"], $_POST["orderid"], (int)$_POST["amount"], $_POST["currency"]);
 }

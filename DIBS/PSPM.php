@@ -42,6 +42,7 @@ class DIBS implements PSPI
 
 		echo '
 		<form id="DIBS" method="POST" action="https://payment.architrade.com/paymentweb/start.action">
+			<input type="hidden" name="decorator" value="responsive">
 			<input type="hidden" name="merchant" value="' . $cfg["Merchant ID"] . '">
 			<input type="hidden" name="callbackurl" value="' . PSP::GetProviderUrl($this->GetName()) . "/Callback.php" . '">
 			<input type="hidden" name="accepturl" value="' . PSP::GetProviderUrl($this->GetName()) . "/Callback.php" . '">

@@ -49,7 +49,7 @@ class QuickPay implements PSPI
 		// TIP: Append "/framed" to the action URL if you want to show the payment window in an iframe:
 		// <form method="POST" action="https://payment.quickpay.net/framed">
 
-		echo '<form id="PaymentForm" method="POST" action="https://payment.quickpay.net">';
+		echo '<form id="PaymentForm" method="POST" action="https://payment.quickpay.net' . (isset($cfg["Framed"]) && $cfg["Framed"] === true ? "/framed" : "") . '">';
 		foreach ($params as $key => $value)
 		{
 			if ($key !== "variables")
